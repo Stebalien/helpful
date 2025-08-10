@@ -6,7 +6,7 @@
 ;; URL: https://github.com/Wilfred/helpful
 ;; Keywords: help, lisp
 ;; Version: 0.22
-;; Package-Requires: ((emacs "25") (dash "2.18.0") (s "1.11.0") (f "0.20.0") (elisp-refs "1.2"))
+;; Package-Requires: ((emacs "25") (dash "2.18.0") (s "1.11.0") (elisp-refs "1.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@
 (require 'help-fns)
 (require 'dash)
 (require 's)
-(require 'f)
 (require 'find-func)
 (require 'nadvice)
 (require 'info-look)
@@ -349,8 +348,8 @@ source code to primitives."
   (let ((emacs-src-dir (read-directory-name "Path to Emacs source code: ")))
     ;; Let the user specify the source path with or without src/,
     ;; which is a subdirectory in the Emacs tree.
-    (unless (equal (f-filename emacs-src-dir) "src")
-      (setq emacs-src-dir (f-join emacs-src-dir "src")))
+    (unless (equal (file-name-nondirectory (directory-file-name emacs-src-dir)) "src")
+      (setq emacs-src-dir (expand-file-name "src/" emacs-src-dir)))
     (setq find-function-C-source-directory emacs-src-dir))
   (helpful-update))
 
@@ -1333,10 +1332,11 @@ LIBRARY-NAME takes the form \"foo.el\" , \"foo.el\" or
 \"src/foo.c\".
 
 If .elc files exist without the corresponding .el, return nil."
-  (when (member (f-ext library-name) '("c" "rs"))
+  (when (member (file-name-extension library-name) '("c" "rs"))
     (setq library-name
-          (f-expand library-name
-                    (f-parent find-function-C-source-directory))))
+          (expand-file-name library-name
+                            (file-name-directory
+                             (directory-file-name find-function-C-source-directory)))))
   (condition-case nil
       (find-library-name library-name)
     (error nil)))
@@ -2389,7 +2389,7 @@ state of the current symbol."
         ((and source-path primitive-p)
          (format
           "Finding references in a .%s file is not supported."
-          (f-ext source-path)))
+          (file-name-extension source-path)))
         (source-path
          (format "%s is unused in %s."
                  helpful--sym
@@ -2480,7 +2480,7 @@ state of the current symbol."
           (propertize (format "%s Defined in " (if primitive-p "//" ";;"))
                       'face 'font-lock-comment-face)
           (helpful--navigate-button
-           (f-abbrev source-path)
+           (abbreviate-file-name source-path)
            source-path
            pos)
           "\n"))
