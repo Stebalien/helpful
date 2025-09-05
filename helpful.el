@@ -198,7 +198,8 @@ gracefully stop the printing. If VALUE is self-referential, the
 error will be caught and displayed."
   ;; Inspired by `ielm-eval-input'.
   (condition-case err
-      (s-trim-right (pp-to-string value))
+      (propertize (s-trim-right (pp-to-string value))
+                  'face 'fixed-pitch)
     (error
      (propertize (format "(Display error: %s)" (cadr err))
                  'face 'font-lock-comment-face))
@@ -1223,6 +1224,7 @@ hooks.")
             (font-lock-ensure)
           (with-no-warnings
             (font-lock-fontify-buffer)))
+        (add-face-text-property (point-min) (point-max) 'fixed-pitch 'append)
         (buffer-string))
     ;; SOURCE was too long to highlight in a reasonable amount of
     ;; time.
